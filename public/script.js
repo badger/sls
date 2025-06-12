@@ -10,6 +10,19 @@ function setInputValues(data) {
         const input = document.getElementById(key);
         if (input) {
             input.value = data[key];
+            
+            // Special handling for archetype to update the visual selection
+            if (key === 'archetype' && data[key]) {
+                const selectedOption = document.querySelector(`.archetype-option[data-value="${data[key]}"]`);
+                if (selectedOption) {
+                    // Remove selected class from all options
+                    document.querySelectorAll('.archetype-option').forEach(opt => 
+                        opt.classList.remove('selected')
+                    );
+                    // Add selected class to the matching option
+                    selectedOption.classList.add('selected');
+                }
+            }
         }
     });
 }
@@ -26,8 +39,8 @@ function loadInitialData() {
         setInputValues({
             firstname: 'Mona',
             lastname: 'Lisa',
-            askmeabout: 'Last Project I Coded',
-            jobtitle: 'Octocat',
+            askmeabout: 'lucky the cat',
+            jobtitle: 'octocat herder',
             archetype: '', // Default archetype is now blank
             githubhandle: 'mona'
         });
@@ -54,6 +67,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Clear the input value
     archetypeInput.value = '';
     
+    // Preload all archetype images for faster rendering
+    const preloadArchetypeImages = () => {
+        archetypeOptions.forEach(option => {
+            const value = option.getAttribute('data-value');
+            const img = new Image();
+            img.src = `./archetypes/archetype-${value}.png`;
+        });
+    };
+    
+    preloadArchetypeImages();
+    
     // Add click event listener to each archetype option
     archetypeOptions.forEach(option => {
         option.addEventListener('click', function() {
@@ -67,8 +91,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const value = this.getAttribute('data-value');
             archetypeInput.value = value;
             
-            // Update the full string with the new archetype value
+            // Update the full string with the new archetype value and redraw the badge
             updateFullString();
+            drawBadge(); // Ensure the badge is redrawn immediately
         });
     });
 });
@@ -228,9 +253,9 @@ function drawBadge() {
     ctx.antialias = 'none';
     
     const margins = {
-        left: 10,
-        top: 10,
-        bottom: 15,
+        left: 8,
+        top: 8,
+        bottom: 5, // Reduced bottom margin to allow text to go lower
         right: 10
     };
     
@@ -240,9 +265,12 @@ function drawBadge() {
     
     // Draw first name in bold
     const firstname = document.getElementById('firstname').value;
-    let firstnameFontSize = 32;
+    let firstnameFontSize = 24;
     ctx.font = `bold ${firstnameFontSize}px "Mona Sans"`;
-    while (ctx.measureText(firstname).width > canvas.width - margins.left - margins.right && firstnameFontSize > 24) {
+    
+    const availableTextWidth = canvas.width - margins.left - margins.right;
+    
+    while (ctx.measureText(firstname).width > availableTextWidth && firstnameFontSize > 24) {
         firstnameFontSize--;
         ctx.font = `bold ${firstnameFontSize}px "Mona Sans"`;
     }
@@ -250,74 +278,93 @@ function drawBadge() {
     
     // Draw last name in bold
     const lastname = document.getElementById('lastname').value;
-    let lastnameFontSize = 24;
+    let lastnameFontSize = 18;
     ctx.font = `bold ${lastnameFontSize}px "Mona Sans"`;
-    while (ctx.measureText(lastname).width > canvas.width - margins.left - margins.right && lastnameFontSize > 18) {
+    while (ctx.measureText(lastname).width > availableTextWidth && lastnameFontSize > 18) {
         lastnameFontSize--;
         ctx.font = `bold ${lastnameFontSize}px "Mona Sans"`;
     }
-    const lastnameY = margins.top + firstnameFontSize + 5;
+    const lastnameY = margins.top + firstnameFontSize + 2;
     ctx.fillText(lastname, margins.left, lastnameY);
     
-    // Get GitHub handle
+    // Get GitHub handle and display it immediately below the last name
     let githubhandle = document.getElementById('githubhandle').value;
     if (githubhandle && !githubhandle.startsWith('@')) {
         githubhandle = '@' + githubhandle;
     }
     
-    // Calculate available space for remaining elements
-    const availableHeight = canvas.height - margins.bottom - (lastnameY + lastnameFontSize + 10);
-    const maxElementHeight = Math.floor(availableHeight / 3); // Divide space between askmeabout, jobtitle, and handle
-    
-    // Start from bottom for consistent spacing
-    let currentY = canvas.height - margins.bottom;
-    
-    // GitHub handle (bottom)
-    let handleFontSize = 16;
-    ctx.font = `${handleFontSize}px "Mona Sans"`;
-    while (ctx.measureText(githubhandle).width > canvas.width - margins.left - margins.right && handleFontSize > 12) {
-        handleFontSize--;
-        ctx.font = `${handleFontSize}px "Mona Sans"`;
+    // Place github handle right below the last name
+    const githubHandleFontSize = 14;
+    ctx.font = `${githubHandleFontSize}px "Mona Sans"`;
+    const topGithubHandleY = lastnameY + lastnameFontSize + 3;
+    ctx.fillText(githubhandle, margins.left, topGithubHandleY);
+
+    // Check if an archetype is selected and draw the archetype image on the right
+    const archetypeValue = document.getElementById('archetype').value;
+    if (archetypeValue) {
+        const archetypeImage = new Image();
+        archetypeImage.src = `./archetypes/archetype-${archetypeValue}.png`;
+        
+        // Define the archetype image size and position
+        const archetypeImageSize = 100;
+        
+        // Position the archetype image on the right side
+        const archetypeX = canvas.width - archetypeImageSize - margins.right - 25; // 25px from right edge
+        const archetypeY = margins.top - 15; // Aligned with top margin
+        
+        if (archetypeImage.complete) {
+            ctx.drawImage(archetypeImage, archetypeX, archetypeY, archetypeImageSize, archetypeImageSize);
+        } else {
+            archetypeImage.onload = function() {
+                ctx.drawImage(archetypeImage, archetypeX, archetypeY, archetypeImageSize, archetypeImageSize);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const bwCanvas = convertTo2BitBW(imageData);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(bwCanvas, 0, 0);
+            };
+        }
     }
-    const handleMetrics = ctx.measureText(githubhandle);
-    const handleHeight = handleMetrics.actualBoundingBoxAscent + handleMetrics.actualBoundingBoxDescent;
-    currentY -= handleHeight;
-    const githubHandleY = currentY;
     
-    // Job title (middle)
-    currentY -= maxElementHeight * 0.8; // Add some spacing
-    let jobtitleFontSize = 16;
+    // Calculate available space for remaining elements
+    const availableHeight = canvas.height - margins.bottom - (topGithubHandleY + githubHandleFontSize + 3);
+    const maxElementHeight = Math.floor(availableHeight / 2);
+
+    // Start from bottom for consistent spacing
+    let currentY = canvas.height - margins.bottom + 5; // Move down by 5 pixels
+    
+    // Ask me about (at bottom)
+    const askmeabout = document.getElementById('askmeabout').value;
+    let askmeaboutY = 0;
+    if (askmeabout) {
+        askmeaboutY = currentY - Math.floor(maxElementHeight * 0.7); // Reduce the spacing to move text lower
+        let askMeAboutFontSize = 14;
+        ctx.font = `${askMeAboutFontSize}px "Mona Sans"`;
+        const askMeText = `ask me about: ${askmeabout}`;
+        while (ctx.measureText(askMeText).width > availableTextWidth && askMeAboutFontSize > 11) {
+            askMeAboutFontSize--;
+            ctx.font = `${askMeAboutFontSize}px "Mona Sans"`;
+        }
+        ctx.fillText(askMeText, margins.left, askmeaboutY);
+        currentY = askmeaboutY - (maxElementHeight * 0.8); // Increased spacing factor from 0.6 to 0.8
+    } else {
+        currentY -= maxElementHeight;
+    }
+    
+    // Job title (above ask me about or at bottom if no askmeabout)
+    let jobtitleFontSize = 14;
     const jobtitle = document.getElementById('jobtitle').value;
     ctx.font = `${jobtitleFontSize}px "Mona Sans"`;
-    while (ctx.measureText(jobtitle).width > canvas.width - margins.left - margins.right && jobtitleFontSize > 12) {
+    while (ctx.measureText(jobtitle).width > availableTextWidth && jobtitleFontSize > 12) {
         jobtitleFontSize--;
         ctx.font = `${jobtitleFontSize}px "Mona Sans"`;
     }
     const jobTitleY = currentY;
     
-    // Ask me about (above job title)
-    const askmeabout = document.getElementById('askmeabout').value;
-    if (askmeabout) {
-        currentY -= maxElementHeight * 0.8;
-        let askMeAboutFontSize = 14;
-        ctx.font = `${askMeAboutFontSize}px "Mona Sans"`;
-        const askMeText = `Ask me about: ${askmeabout}`;
-        while (ctx.measureText(askMeText).width > canvas.width - margins.left - margins.right && askMeAboutFontSize > 11) {
-            askMeAboutFontSize--;
-            ctx.font = `${askMeAboutFontSize}px "Mona Sans"`;
-        }
-        ctx.fillText(askMeText, margins.left, currentY);
-    }
-    
-    // Draw job title and handle with their calculated positions
+    // Draw job title
     ctx.font = `${jobtitleFontSize}px "Mona Sans"`;
     ctx.fillText(jobtitle, margins.left, jobTitleY);
-    
-    ctx.font = `${handleFontSize}px "Mona Sans"`;
-    ctx.fillText(githubhandle, margins.left, githubHandleY);
 
-    // Convert to 2-bit black and white after drawing so you get an accurate preview
-    // of e-ink display
+    // Convert to 2-bit black and white
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const bwCanvas = convertTo2BitBW(imageData);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -330,6 +377,18 @@ Promise.all([
     new Promise(resolve => backgroundImage.onload = resolve)
 ]).then(() => {
     drawBadge();
+    
+    // Add a function to refresh the badge when archetype is selected from URL params
+    const archetypeFromUrl = document.getElementById('archetype').value;
+    if (archetypeFromUrl) {
+        // Find and mark the selected archetype option
+        const selectedOption = document.querySelector(`.archetype-option[data-value="${archetypeFromUrl}"]`);
+        if (selectedOption) {
+            selectedOption.classList.add('selected');
+            // Ensure the badge redraws with the archetype
+            setTimeout(drawBadge, 100);
+        }
+    }
 });
 
 // Update the event listener to handle resize
