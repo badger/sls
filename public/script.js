@@ -240,6 +240,14 @@ function drawBadge() {
     const githubHandleY = (canvas.height) - bottomMargin - textHeight;
     const jobTitleY = githubHandleY - textHeight - lineHeightGap;
     
+    // Draw Ask Me About
+    const askmeabout = document.getElementById('askmeabout').value;
+    if (askmeabout) {
+        ctx.font = `14px "Mona Sans"`;
+        const askMeText = `Ask me about: ${askmeabout}`;
+        ctx.fillText(askMeText, leftMargin, jobTitleY - textHeight - lineHeightGap);
+    }
+
     // Draw the text
     ctx.fillText(jobtitle, leftMargin, jobTitleY);
     ctx.fillText(githubhandle, leftMargin, githubHandleY);
