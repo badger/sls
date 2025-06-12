@@ -26,7 +26,7 @@ function loadInitialData() {
         setInputValues({
             firstname: 'Mona',
             lastname: 'Lisa',
-            ask-me-about: 'Last Project I Coded',
+            askmeabout: 'Last Project I Coded',
             jobtitle: 'Octocat',
             pronouns: '',
             githubhandle: 'mona'
@@ -63,7 +63,7 @@ function updateFullString() {
     });
 
     // Define the order of fields
-    const fieldOrder = ['firstname', 'lastname', 'ask-me-about', 'jobtitle', 'pronouns', 'githubhandle'];
+    const fieldOrder = ['firstname', 'lastname', 'askmeabout', 'jobtitle', 'pronouns', 'githubhandle'];
 
     // Map the ordered fields to their values
     const orderedValues = fieldOrder.map(fieldName => fieldValues[fieldName] || '');
@@ -120,7 +120,7 @@ function updateFormWithGitHubData(data) {
     if (data) {
         document.getElementById('firstname').value = data.name ? data.name.split(' ')[0] : '';
         document.getElementById('lastname').value = data.name ? data.name.split(' ').slice(1).join(' ') : '';
-        document.getElementById('ask-me-about').value = data.ask-me-about ? data.ask-me-about.replace(/^@/, '') : '';
+        document.getElementById('askmeabout').value = data.askmeabout ? data.askmeabout.replace(/^@/, '') : '';
         document.getElementById('jobtitle').value = data.bio ? cleanJobTitle(data.bio.split('.')[0].trim()) : '';
         updateFullString(); // Update the full string with new data
     }
@@ -154,7 +154,7 @@ const otherInputs = document.querySelectorAll('input:not(#fullstring)');
 function parseFullString(fullString) {
     const parts = fullString.split('^');
     const id = parts[0].replace('iD', '');
-    const fields = ['firstname', 'lastname', 'ask-me-about', 'jobtitle', 'pronouns', 'githubhandle'];
+    const fields = ['firstname', 'lastname', 'askmeabout', 'jobtitle', 'pronouns', 'githubhandle'];
     const values = parts.slice(1, -1); // Exclude the last empty element
 
     const result = { id };
