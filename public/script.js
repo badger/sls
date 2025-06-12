@@ -195,62 +195,94 @@ function drawBadge() {
     ctx.imageSmoothingEnabled = false;
     ctx.antialias = 'none';
     
-    const bottomMargin = 10;
-    const leftMargin = 10;
-    const topMargin = 10;
+    const margins = {
+        left: 10,
+        top: 10,
+        bottom: 15,
+        right: 10
+    };
     
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     ctx.textBaseline = 'top';
+    ctx.fillStyle = '#000000';
     
     // Draw first name in bold
-    ctx.font = 'bold 32px "Mona Sans"';
-    ctx.fillStyle = '#000000';
     const firstname = document.getElementById('firstname').value;
-    ctx.fillText(firstname, leftMargin, topMargin);
+    let firstnameFontSize = 32;
+    ctx.font = `bold ${firstnameFontSize}px "Mona Sans"`;
+    while (ctx.measureText(firstname).width > canvas.width - margins.left - margins.right && firstnameFontSize > 24) {
+        firstnameFontSize--;
+        ctx.font = `bold ${firstnameFontSize}px "Mona Sans"`;
+    }
+    ctx.fillText(firstname, margins.left, margins.top);
     
     // Draw last name in bold
-    ctx.font = 'bold 24px "Mona Sans"';
     const lastname = document.getElementById('lastname').value;
-    ctx.fillText(lastname, leftMargin, 45);
-        
+    let lastnameFontSize = 24;
+    ctx.font = `bold ${lastnameFontSize}px "Mona Sans"`;
+    while (ctx.measureText(lastname).width > canvas.width - margins.left - margins.right && lastnameFontSize > 18) {
+        lastnameFontSize--;
+        ctx.font = `bold ${lastnameFontSize}px "Mona Sans"`;
+    }
+    const lastnameY = margins.top + firstnameFontSize + 5;
+    ctx.fillText(lastname, margins.left, lastnameY);
+    
     // Get GitHub handle
     let githubhandle = document.getElementById('githubhandle').value;
     if (githubhandle && !githubhandle.startsWith('@')) {
         githubhandle = '@' + githubhandle;
     }
     
-    // Calculate dynamic font size for job title
-    let jobtitleFontSize = 16;  // Default font size
-    const jobtitle = document.getElementById('jobtitle').value;
+    // Calculate available space for remaining elements
+    const availableHeight = canvas.height - margins.bottom - (lastnameY + lastnameFontSize + 10);
+    const maxElementHeight = Math.floor(availableHeight / 3); // Divide space between askmeabout, jobtitle, and handle
     
-    if (jobtitle) {  // Only calculate new size if jobtitle is not empty
-        ctx.font = `${jobtitleFontSize}px "Mona Sans"`;
-        while (ctx.measureText(jobtitle).width > canvas.width - 40 && jobtitleFontSize > 8) {
-            jobtitleFontSize--;
-            ctx.font = `${jobtitleFontSize}px "Mona Sans"`;
-        }
+    // Start from bottom for consistent spacing
+    let currentY = canvas.height - margins.bottom;
+    
+    // GitHub handle (bottom)
+    let handleFontSize = 16;
+    ctx.font = `${handleFontSize}px "Mona Sans"`;
+    while (ctx.measureText(githubhandle).width > canvas.width - margins.left - margins.right && handleFontSize > 12) {
+        handleFontSize--;
+        ctx.font = `${handleFontSize}px "Mona Sans"`;
     }
+    const handleMetrics = ctx.measureText(githubhandle);
+    const handleHeight = handleMetrics.actualBoundingBoxAscent + handleMetrics.actualBoundingBoxDescent;
+    currentY -= handleHeight;
+    const githubHandleY = currentY;
     
-    // Calculate text metrics to fit job title within canvas
+    // Job title (middle)
+    currentY -= maxElementHeight * 0.8; // Add some spacing
+    let jobtitleFontSize = 16;
+    const jobtitle = document.getElementById('jobtitle').value;
     ctx.font = `${jobtitleFontSize}px "Mona Sans"`;
-    const fontMetrics = ctx.measureText("Jobby");
-    const textHeight = fontMetrics.actualBoundingBoxAscent + fontMetrics.actualBoundingBoxDescent;
-    const lineHeightGap = textHeight * 0.3; 
-
-    const githubHandleY = (canvas.height) - bottomMargin - textHeight;
-    const jobTitleY = githubHandleY - textHeight - lineHeightGap;
+    while (ctx.measureText(jobtitle).width > canvas.width - margins.left - margins.right && jobtitleFontSize > 12) {
+        jobtitleFontSize--;
+        ctx.font = `${jobtitleFontSize}px "Mona Sans"`;
+    }
+    const jobTitleY = currentY;
     
-    // Draw Ask Me About
+    // Ask me about (above job title)
     const askmeabout = document.getElementById('askmeabout').value;
     if (askmeabout) {
-        ctx.font = `14px "Mona Sans"`;
+        currentY -= maxElementHeight * 0.8;
+        let askMeAboutFontSize = 14;
+        ctx.font = `${askMeAboutFontSize}px "Mona Sans"`;
         const askMeText = `Ask me about: ${askmeabout}`;
-        ctx.fillText(askMeText, leftMargin, jobTitleY - textHeight - lineHeightGap);
+        while (ctx.measureText(askMeText).width > canvas.width - margins.left - margins.right && askMeAboutFontSize > 11) {
+            askMeAboutFontSize--;
+            ctx.font = `${askMeAboutFontSize}px "Mona Sans"`;
+        }
+        ctx.fillText(askMeText, margins.left, currentY);
     }
-
-    // Draw the text
-    ctx.fillText(jobtitle, leftMargin, jobTitleY);
-    ctx.fillText(githubhandle, leftMargin, githubHandleY);
+    
+    // Draw job title and handle with their calculated positions
+    ctx.font = `${jobtitleFontSize}px "Mona Sans"`;
+    ctx.fillText(jobtitle, margins.left, jobTitleY);
+    
+    ctx.font = `${handleFontSize}px "Mona Sans"`;
+    ctx.fillText(githubhandle, margins.left, githubHandleY);
 
     // Convert to 2-bit black and white after drawing so you get an accurate preview
     // of e-ink display
