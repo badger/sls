@@ -23,8 +23,34 @@
             <input type="text" id="jobtitle" name="jobtitle">
             <label for="askmeabout">Ask Me About:</label>
             <input type="text" id="askmeabout" name="askmeabout">
-            <label for="pronouns">Pronouns:</label>
-            <input type="text" id="pronouns" name="pronouns">
+            <label for="archetype">Archetype:</label>
+            <div class="archetype-selector">
+                <div class="archetype-option" data-value="builder">
+                    <img src="./archetypes/archetype-builder.png" alt="Builder" />
+                    <span>Builder</span>
+                </div>
+                <div class="archetype-option" data-value="changecatalyst">
+                    <img src="./archetypes/archetype-changecatalyst.png" alt="Change Catalyst" />
+                    <span>Change Catalyst</span>
+                </div>
+                <div class="archetype-option" data-value="coach">
+                    <img src="./archetypes/archetype-coach.png" alt="Coach" />
+                    <span>Coach</span>
+                </div>
+                <div class="archetype-option" data-value="communicator">
+                    <img src="./archetypes/archetype-communicator.png" alt="Communicator" />
+                    <span>Communicator</span>
+                </div>
+                <div class="archetype-option" data-value="innovator">
+                    <img src="./archetypes/archetype-innovator.png" alt="Innovator" />
+                    <span>Innovator</span>
+                </div>
+                <div class="archetype-option" data-value="strategist">
+                    <img src="./archetypes/archetype-strategist.png" alt="Strategist" />
+                    <span>Strategist</span>
+                </div>
+                <input type="hidden" id="archetype" name="archetype" value="">
+            </div>
         </div> 
         <div class="preview-section">
             <div class="badge-preview">
@@ -71,12 +97,10 @@
 
     <script src="script.js"></script>
 
-    <footer style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #f0f0f0; padding: 10px; text-align: center;">
-        <a href="https://github.com/badger/badger.github.io" target="_blank" style="color: #333; text-decoration: none;">
-            View source</a>
-            &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-        <a href="https://viper-ide.org/" target="_blank" style="color: #333; text-decoration: none;">
-            Edit code on badge</a>
+    <footer>
+        <a href="https://github.com/badger/badger.github.io" target="_blank">View source</a>
+        &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+        <a href="https://viper-ide.org/" target="_blank">Edit code on badge</a>
     </footer>
 </body>
 </html>

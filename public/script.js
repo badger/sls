@@ -28,7 +28,7 @@ function loadInitialData() {
             lastname: 'Lisa',
             askmeabout: 'Last Project I Coded',
             jobtitle: 'Octocat',
-            pronouns: '',
+            archetype: '', // Default archetype is now blank
             githubhandle: 'mona'
         });
     }
@@ -40,6 +40,38 @@ function loadInitialData() {
 
 // Call loadInitialData when the page loads
 window.addEventListener('load', loadInitialData);
+
+// Handle archetype selection
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all archetype options
+    const archetypeOptions = document.querySelectorAll('.archetype-option');
+    const archetypeInput = document.getElementById('archetype');
+    
+    // No default archetype is selected now (blank by default)
+    const defaultOption = null;
+    // Clear any previous selection
+    archetypeOptions.forEach(opt => opt.classList.remove('selected'));
+    // Clear the input value
+    archetypeInput.value = '';
+    
+    // Add click event listener to each archetype option
+    archetypeOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove selected class from all options
+            archetypeOptions.forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            this.classList.add('selected');
+            
+            // Update hidden input value with the selected archetype
+            const value = this.getAttribute('data-value');
+            archetypeInput.value = value;
+            
+            // Update the full string with the new archetype value
+            updateFullString();
+        });
+    });
+});
 
 const inputs = document.querySelectorAll('input:not(#fullstring)');
 const fullStringInput = document.getElementById('fullstring');
@@ -63,7 +95,7 @@ function updateFullString() {
     });
 
     // Define the order of fields
-    const fieldOrder = ['firstname', 'lastname', 'askmeabout', 'jobtitle', 'pronouns', 'githubhandle'];
+    const fieldOrder = ['firstname', 'lastname', 'askmeabout', 'jobtitle', 'archetype', 'githubhandle'];
 
     // Map the ordered fields to their values
     const orderedValues = fieldOrder.map(fieldName => fieldValues[fieldName] || '');
@@ -154,7 +186,7 @@ const otherInputs = document.querySelectorAll('input:not(#fullstring)');
 function parseFullString(fullString) {
     const parts = fullString.split('^');
     const id = parts[0].replace('iD', '');
-    const fields = ['firstname', 'lastname', 'askmeabout', 'jobtitle', 'pronouns', 'githubhandle'];
+    const fields = ['firstname', 'lastname', 'askmeabout', 'jobtitle', 'archetype', 'githubhandle'];
     const values = parts.slice(1, -1); // Exclude the last empty element
 
     const result = { id };
@@ -423,10 +455,10 @@ display.update()`;
             await readableStreamClosed;
             await port.close();
 
-            //alert('Files transferred successfully!');
+            alert('Files transferred successfully!');
         } catch (error) {
             console.error('Error:', error);
-            //alert('An error occurred while transferring files.');
+            alert('An error occurred while transferring files: ' + error.message);
         }
     } else {
         alert('Web Serial API not supported in this browser.');
