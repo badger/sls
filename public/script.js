@@ -81,15 +81,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add click event listener to each archetype option
     archetypeOptions.forEach(option => {
         option.addEventListener('click', function() {
-            // Remove selected class from all options
-            archetypeOptions.forEach(opt => opt.classList.remove('selected'));
+            const clickedValue = this.getAttribute('data-value');
+            const currentValue = archetypeInput.value;
             
-            // Add selected class to clicked option
-            this.classList.add('selected');
-            
-            // Update hidden input value with the selected archetype
-            const value = this.getAttribute('data-value');
-            archetypeInput.value = value;
+            // Check if the clicked option is already selected
+            if (clickedValue === currentValue && this.classList.contains('selected')) {
+                // If already selected, unselect it
+                this.classList.remove('selected');
+                archetypeInput.value = ''; // Clear the input value
+            } else {
+                // Otherwise, select it
+                // Remove selected class from all options
+                archetypeOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selected class to clicked option
+                this.classList.add('selected');
+                
+                // Update hidden input value with the selected archetype
+                archetypeInput.value = clickedValue;
+            }
             
             // Update the full string with the new archetype value and redraw the badge
             updateFullString();
@@ -306,10 +316,10 @@ function drawBadge() {
         archetypeImage.src = `./archetypes/archetype-${archetypeValue}.png`;
         
         // Define the archetype image size and position
-        const archetypeImageSize = 100;
+        const archetypeImageSize = 90;
         
         // Position the archetype image on the right side
-        const archetypeX = canvas.width - archetypeImageSize - margins.right - 25; // 25px from right edge
+        const archetypeX = canvas.width - archetypeImageSize - margins.right + 10; // Far right as much as possible
         const archetypeY = margins.top - 15; // Aligned with top margin
         
         if (archetypeImage.complete) {
@@ -330,16 +340,16 @@ function drawBadge() {
     const maxElementHeight = Math.floor(availableHeight / 2);
 
     // Start from bottom for consistent spacing
-    let currentY = canvas.height - margins.bottom + 5; // Move down by 5 pixels
+    let currentY = canvas.height - margins.bottom + 5; // Move down to 5 pixels
     
     // Ask me about (at bottom)
     const askmeabout = document.getElementById('askmeabout').value;
     let askmeaboutY = 0;
     if (askmeabout) {
-        askmeaboutY = currentY - Math.floor(maxElementHeight * 0.7); // Reduce the spacing to move text lower
+        askmeaboutY = currentY - Math.floor(maxElementHeight * 0.9); // Reduce the spacing to move text lower
         let askMeAboutFontSize = 14;
         ctx.font = `${askMeAboutFontSize}px "Mona Sans"`;
-        const askMeText = `ask me about: ${askmeabout}`;
+        const askMeText = `ask about: ${askmeabout}`;
         while (ctx.measureText(askMeText).width > availableTextWidth && askMeAboutFontSize > 11) {
             askMeAboutFontSize--;
             ctx.font = `${askMeAboutFontSize}px "Mona Sans"`;
