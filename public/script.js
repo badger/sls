@@ -179,7 +179,8 @@ async function fetchGitHubUser(username) {
 
 // Add this helper function before updateFormWithGitHubData
 function cleanJobTitle(title) {
-    return title.replace(/\s*@\w+$/, '').trim();
+    // No longer removing @ mentions, just trimming whitespace
+    return title.trim();
 }
 
 // Function to update form fields with GitHub data
@@ -187,7 +188,14 @@ function updateFormWithGitHubData(data) {
     if (data) {
         document.getElementById('firstname').value = data.name ? data.name.split(' ')[0] : '';
         document.getElementById('lastname').value = data.name ? data.name.split(' ').slice(1).join(' ') : '';
-        document.getElementById('askmeabout').value = data.askmeabout ? data.askmeabout.replace(/^@/, '') : '';
+        
+        // Enforce character limit for askmeabout field
+        let askmeabout = data.askmeabout ? data.askmeabout.replace(/^@/, '') : '';
+        if (askmeabout.length > 45) {
+            askmeabout = askmeabout.substring(0, 45);
+        }
+        document.getElementById('askmeabout').value = askmeabout;
+        
         document.getElementById('jobtitle').value = data.bio ? cleanJobTitle(data.bio.split('.')[0].trim()) : '';
         updateFullString(); // Update the full string with new data
     }
@@ -210,6 +218,10 @@ githubHandleInput.addEventListener('blur', handleGitHubInput);
 // Modify the input event listeners to clean job titles
 inputs.forEach(input => {
     input.addEventListener('input', (e) => {
+        // Enforce character limit for askmeabout field
+        if (input.name === 'askmeabout' && input.value.length > 45) {
+            input.value = input.value.substring(0, 45);
+        }
         updateFullString();
     });
 });
@@ -226,7 +238,14 @@ function parseFullString(fullString) {
 
     const result = { id };
     fields.forEach((field, index) => {
-        result[field] = values[index] || '';
+        let value = values[index] || '';
+        
+        // Enforce character limit for askmeabout field
+        if (field === 'askmeabout' && value.length > 45) {
+            value = value.substring(0, 45);
+        }
+        
+        result[field] = value;
     });
 
     if (result.githubhandle && !result.githubhandle.startsWith('@')) {
@@ -349,7 +368,7 @@ function drawBadge() {
         askmeaboutY = currentY - Math.floor(maxElementHeight * 0.9); // Reduce the spacing to move text lower
         let askMeAboutFontSize = 14;
         ctx.font = `${askMeAboutFontSize}px "Mona Sans"`;
-        const askMeText = `ask about: ${askmeabout}`;
+        const askMeText = `ASK: ${askmeabout}`;
         while (ctx.measureText(askMeText).width > availableTextWidth && askMeAboutFontSize > 11) {
             askMeAboutFontSize--;
             ctx.font = `${askMeAboutFontSize}px "Mona Sans"`;
