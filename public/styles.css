@@ -87,7 +87,6 @@ input {
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     margin-top: 10px;
-    display: none; /* hide by default */
 }
 
 .archetype-option {
